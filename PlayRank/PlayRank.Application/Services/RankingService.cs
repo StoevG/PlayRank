@@ -36,14 +36,9 @@ namespace PlayRank.Application.Core.Services
                 .ThenByDescending(r => r.Wins)
                 .ToListAsync();
 
-            var result = _mapper.Map<List<RankingViewModel>>(rankings);
-            var rankDict = await GetTeamRankPositionsAsync();
-            foreach (var vm in result)
-            {
-                if (rankDict.TryGetValue(vm.TeamId, out int rank))
-                    vm.RankPosition = rank;
-            }
-            return ServiceResult.Success(result);
+            var viewModels = _mapper.Map<List<RankingViewModel>>(rankings);
+            viewModels = await ApplyRankPositionsAsync(viewModels);
+            return ServiceResult.Success(viewModels);
         }
 
         public async Task<ServiceResult<List<RankingViewModel>>> GetTopTeamsAsync(int count)
@@ -55,14 +50,9 @@ namespace PlayRank.Application.Core.Services
                 .Take(count)
                 .ToListAsync();
 
-            var result = _mapper.Map<List<RankingViewModel>>(rankings);
-            var rankDict = await GetTeamRankPositionsAsync();
-            foreach (var vm in result)
-            {
-                if (rankDict.TryGetValue(vm.TeamId, out int rank))
-                    vm.RankPosition = rank;
-            }
-            return ServiceResult.Success(result);
+            var viewModels = _mapper.Map<List<RankingViewModel>>(rankings);
+            viewModels = await ApplyRankPositionsAsync(viewModels);
+            return ServiceResult.Success(viewModels);
         }
 
         public async Task<ServiceResult<TeamStatisticViewModel>> GetTeamStatisticsAsync(int teamId)
@@ -73,19 +63,10 @@ namespace PlayRank.Application.Core.Services
             if (ranking == null)
             {
                 return ServiceResult.Failed<TeamStatisticViewModel>(new ServiceError(ErrorMessages.TeamRankingNotFound, 404));
-
             }
             var result = _mapper.Map<TeamStatisticViewModel>(ranking);
             var rankDict = await GetTeamRankPositionsAsync();
-            if (rankDict.TryGetValue(teamId, out int rank))
-            {
-                result.RankPosition = rank;
-
-            }
-            else
-            {
-                result.RankPosition = 0;
-            }
+            result.RankPosition = rankDict.TryGetValue(teamId, out int rank) ? rank : 0;
             return ServiceResult.Success(result);
         }
 
@@ -106,17 +87,16 @@ namespace PlayRank.Application.Core.Services
                 .ToListAsync();
 
             var pagedRankings = allRankings.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-            var result = _mapper.Map<List<RankingViewModel>>(pagedRankings);
-
+            var viewModels = _mapper.Map<List<RankingViewModel>>(pagedRankings);
             var rankDict = allRankings
                 .Select((r, index) => new { r.TeamId, Rank = index + 1 })
                 .ToDictionary(x => x.TeamId, x => x.Rank);
-            foreach (var vm in result)
+            foreach (var vm in viewModels)
             {
                 if (rankDict.TryGetValue(vm.TeamId, out int rank))
                     vm.RankPosition = rank;
             }
-            return ServiceResult.Success(result);
+            return ServiceResult.Success(viewModels);
         }
 
         public async Task<ServiceResult<List<RankingViewModel>>> GetTopTeamsByWinsAsync(int count)
@@ -127,14 +107,9 @@ namespace PlayRank.Application.Core.Services
                 .Take(count)
                 .ToListAsync();
 
-            var result = _mapper.Map<List<RankingViewModel>>(rankings);
-            var rankDict = await GetTeamRankPositionsAsync();
-            foreach (var vm in result)
-            {
-                if (rankDict.TryGetValue(vm.TeamId, out int rank))
-                    vm.RankPosition = rank;
-            }
-            return ServiceResult.Success(result);
+            var viewModels = _mapper.Map<List<RankingViewModel>>(rankings);
+            viewModels = await ApplyRankPositionsAsync(viewModels);
+            return ServiceResult.Success(viewModels);
         }
 
         public async Task<ServiceResult<List<RankingViewModel>>> GetTopTeamsByDrawsAsync(int count)
@@ -145,14 +120,9 @@ namespace PlayRank.Application.Core.Services
                 .Take(count)
                 .ToListAsync();
 
-            var result = _mapper.Map<List<RankingViewModel>>(rankings);
-            var rankDict = await GetTeamRankPositionsAsync();
-            foreach (var vm in result)
-            {
-                if (rankDict.TryGetValue(vm.TeamId, out int rank))
-                    vm.RankPosition = rank;
-            }
-            return ServiceResult.Success(result);
+            var viewModels = _mapper.Map<List<RankingViewModel>>(rankings);
+            viewModels = await ApplyRankPositionsAsync(viewModels);
+            return ServiceResult.Success(viewModels);
         }
 
         public async Task<ServiceResult<List<RankingViewModel>>> GetTopTeamsByLeastLossesAsync(int count)
@@ -163,14 +133,9 @@ namespace PlayRank.Application.Core.Services
                 .Take(count)
                 .ToListAsync();
 
-            var result = _mapper.Map<List<RankingViewModel>>(rankings);
-            var rankDict = await GetTeamRankPositionsAsync();
-            foreach (var vm in result)
-            {
-                if (rankDict.TryGetValue(vm.TeamId, out int rank))
-                    vm.RankPosition = rank;
-            }
-            return ServiceResult.Success(result);
+            var viewModels = _mapper.Map<List<RankingViewModel>>(rankings);
+            viewModels = await ApplyRankPositionsAsync(viewModels);
+            return ServiceResult.Success(viewModels);
         }
 
         public async Task<ServiceResult<bool>> RecalculateRankingsAsync()
@@ -301,6 +266,18 @@ namespace PlayRank.Application.Core.Services
                 homeRanking.Points += 1;
                 awayRanking.Points += 1;
             }
+        }
+        private async Task<List<RankingViewModel>> ApplyRankPositionsAsync(List<RankingViewModel> viewModels)
+        {
+            var rankDict = await GetTeamRankPositionsAsync();
+            foreach (var vm in viewModels)
+            {
+                if (rankDict.TryGetValue(vm.TeamId, out int rank))
+                {
+                    vm.RankPosition = rank;
+                }
+            }
+            return viewModels;
         }
     }
 }
