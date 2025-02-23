@@ -1,6 +1,7 @@
 using PlayRank.Api.Extensions;
 using PlayRank.Application.Core.Interfaces.External;
 using PlayRank.Application.Core.Services.External;
+using PlayRank.Domain.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,7 @@ builder.Services.RegisterAutoMapper();
 
 builder.Services.AddHttpClient<IFootballTeamService, FootballTeamService>(client =>
 {
-    client.BaseAddress = new Uri("https://v3.football.api-sports.io/");
+    client.BaseAddress = new Uri(builder.Configuration[ExternalFootballConstants.BaseUrlConfigKey]!);
 });
 
 builder.Services.RegisterRepositories();

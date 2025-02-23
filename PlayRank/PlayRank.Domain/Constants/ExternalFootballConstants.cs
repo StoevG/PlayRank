@@ -3,6 +3,7 @@
     public static class ExternalFootballConstants
     {
         // Configuration keys
+        public const string BaseUrlConfigKey = "FootballApi:BaseUrl";
         public const string ApiKeyConfigKey = "FootballApi:ApiKey";
 
         // HTTP header keys
