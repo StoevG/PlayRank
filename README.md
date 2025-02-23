@@ -164,7 +164,7 @@ The project integrates with an external football API to fetch up-to-date team da
 ### **Setup Instructions:**
 
 1. **Obtain an API Key:**  
-   Register with API-SPORTS (or via RapidAPI) to obtain your API key.
+   Register with [API-SPORTS](https://www.api-football.com/news/post/how-to-get-all-teams-and-their-ids) (or via RapidAPI) to obtain your API key.
 
 2. **Configure Your Application:**  
    In your `appsettings.json`, add:
